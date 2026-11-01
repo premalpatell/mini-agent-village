@@ -12,6 +12,13 @@ How to use this file: each section is one decision. Read the options and Jarvis'
 **Jarvis suggests:** a research task with a checkable finish line, e.g. *"Produce a one-page briefing on X with at least 5 sources, every claim checked by a second agent."* It uses all three tools and can be scored, and it tests the AI Village failure where one agent's false claim spreads.
 **Also consider:** a goal where agents must **cooperate or share something** (a shared budget, a shared resource, splitting the work). That brings Prof. Jin's research question (GovSim: cooperation) into the village from day one.
 
+**Options ranked for Prof. Jin (1 Nov):**
+- **A. Truth in the village:** fact-checked briefing; some runs plant a false fact. *Does checking between agents (especially different models) stop false claims spreading?* Fits multi-agent + misinformation. Safe and clear.
+- **B. The real commons ⭐:** the briefing from A, but all agents share **one token pool** (their real compute) that refills a little each round; over-spending → collapse for everyone. *Do agents share a real resource better or worse than GovSim's simulated fish?* Directly extends GovSim. The code is just a *shared* budget cap.
+- **C. Causal detectives:** agents uncover a hidden cause in a dataset. Fits causal reasoning, but needs knowledge you don't have yet: high risk in an interview. Future idea.
+- **D. Sanctions:** avoid. Her lab already published **SanctSim**.
+- **Jarvis suggests A + B, with the classic fish game as a GovSim baseline:** "replicate, then extend". Check the literature before calling B new. If time runs short, A + the classic fish game is still strong.
+
 **Your answer:**
 > _write here_
 
