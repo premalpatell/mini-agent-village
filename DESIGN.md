@@ -10,6 +10,7 @@ How to use this file: each section is one decision. Read the options and Jarvis'
 **Decide:** what the agents work on together in a normal run (the GovSim game comes later, as a second mode).
 **Options:** a research task (e.g. a fact-checked briefing on a topic) · a coding task (e.g. build and test a small program) · a puzzle or game.
 **Jarvis suggests:** a research task with a checkable finish line, e.g. *"Produce a one-page briefing on X with at least 5 sources, every claim checked by a second agent."* It uses all three tools and can be scored, and it tests the AI Village failure where one agent's false claim spreads.
+**Also consider:** a goal where agents must **cooperate or share something** (a shared budget, a shared resource, splitting the work). That brings Prof. Jin's research question (GovSim: cooperation) into the village from day one.
 
 **Your answer:**
 > _write here_
