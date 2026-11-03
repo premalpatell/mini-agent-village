@@ -49,8 +49,17 @@ How to use this file: each section is one decision. Read the options and Jarvis'
 **Options:** Python runner (inside Docker) · web search · notes file (memory) · send a message to the group chat · read the chat.
 **Jarvis suggests:** text-only tools: `run_python`, `web_search`, `read_notes` / `write_notes`, `post_message`. No clicking a screen, because GUI use was AI Village's main failure point. Which search service to use can wait until Week 4.
 
-**Your answer:**
-> _write here_
+**Your answer (decided 3 Nov):**
+> Text-only tools; my code runs every one, and it decides whether each call is allowed.
+>
+> | Tool | What it does | Why |
+> |---|---|---|
+> | `run_python` | Runs code in a **Docker container**: no internet, 10-second limit, memory limit, thrown away after the run | Bad or harmful code only affects the box |
+> | `search_library` | Searches a **fixed library** of ~30 saved pages on the topic | Every run sees the same pages (**reproducible**), it's free, and I can **plant the false fact** in one page. Live web search is used only for the demo |
+> | `read_notes` / `write_notes` | The agent's **private** memory file | Models forget between calls; the chat is already the shared space |
+> | `post_message` | Says something in the group chat | Reading isn't a tool: the last 20 messages are shown at the start of each turn (fewer tools = fewer mistakes) |
+> | `add_claim(text, source)` / `check_claim(claim, verdict, reason)` | Adds a claim marked *unchecked*; **only a different agent** can mark it correct / wrong / unsure. Only *correct* claims go in the briefing | Every check is saved as **data**, so "checked by" tags and catch rates come out automatically, and the code enforces "no checking yourself" |
+> | `claim_tokens(amount)` *(B only, Week 7)* | Claims tokens from the shared pool each round | The real-commons game |
 
 ## 4. How does the group chat work?
 **Decide:** where messages are stored, and what each agent sees.
