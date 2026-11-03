@@ -33,40 +33,46 @@ How to use this file: each section is one decision. Read the options and Jarvis'
 **Options:** 2–5 agents · hosted models from OpenRouter (different companies) · your own self-hosted model (vLLM in Week 3; Ollama as the free fallback).
 **Jarvis suggests:** **3 agents**: 2 hosted from **different model families** + 1 self-hosted. Give all three the **same system prompt**, so the model is the only thing that differs. That keeps the comparison fair later.
 
-**Your answer (decided 3 Nov):**
+**Your answer (decided 3 Nov; revised 3 Nov after the bias audit):**
 > **3 agents.** Two is only a pair; three is the smallest real group (someone can be outvoted, a free-rider can hide), and it fits the A→B→C→A checking loop while keeping costs low.
 >
-> **Models:** 2 hosted models from **different companies** + 1 **self-hosted** model on a rented GPU (vLLM, Week 3; Ollama qwen2.5:3b as the free fallback). Self-hosting is the independent setup Prof. Jin asks for.
+> **Models:** three models in the **same size class (~7–9B)** from **three different companies**: 1 **self-hosted** on a rented GPU (vLLM, Week 3; Ollama qwen2.5:3b as the free fallback) + 2 **hosted** (OpenRouter). Self-hosting is the independent setup Prof. Jin asks for. Same size class, so "mixed vs same" can't secretly mean "big vs small".
 >
-> **Second condition:** a **same-model village** (3 copies of one model) to compare against the mixed village in experiment A. I'll run it on my self-hosted model, so the copies cost only GPU time, not per-token fees.
+> **Group types:** a same-model group for **each** model (AAA, BBB, CCC) plus the mixed group (ABC). The **diversity effect** = ABC compared with the average of AAA, BBB and CCC. These contain exactly the same models, so strength is matched by design. *(Revised: before, the only same-model group was the self-hosted one, so a difference could have come from model strength.)* Small hosted models cost about a cent per run, so the hosted same-model groups are affordable.
 >
-> **Exact hosted models:** chosen in Week 5 after checking current OpenRouter prices (free models get rate-limited). Budget ~$5 of credit.
+> **Exact models:** chosen in Week 5. Each must pass a **pre-flight test** (20 tool calls, at least 18 correct) and be pinned to one provider on OpenRouter.
 >
-> **Names:** neutral (Agent A, B, C), with the **same instructions** for all, so the model is the only difference between agents (the control).
-
-⚠ **Jarvis check (3 Nov), please revise:** the same-model group (3 × your 7–8B) vs the mixed group (2 bigger hosted models) changes **two things at once**: diversity *and* strength. Choose hosted models in the **same size class** (~7–9B, different companies), and plan to analyse results per checker→writer pair. Also: the same temperature and max output length for every agent. (PROJECT-MASTER §4.13, fixes 1 + 15.)
+> **Demo vs experiment:** the public demo may use stronger hosted models. **Results come only from the matched set**, and the README says so.
+>
+> **Same settings for all:** the same system prompt, temperature and max output length, logged with every call.
+>
+> **Names:** neutral (Agent A, B, C), so the model is the only difference between agents (the control).
 
 ## 3. What tools does each agent get?
 **Decide:** the tool list, and what each one is allowed to do.
 **Options:** Python runner (inside Docker) · web search · notes file (memory) · send a message to the group chat · read the chat.
 **Jarvis suggests:** text-only tools: `run_python`, `web_search`, `read_notes` / `write_notes`, `post_message`. No clicking a screen, because GUI use was AI Village's main failure point. Which search service to use can wait until Week 4.
 
-**Your answer (decided 3 Nov):**
+**Your answer (decided 3 Nov; revised 3 Nov after the bias audit):**
 > Text-only tools; my code runs every one, and it decides whether each call is allowed.
 >
 > | Tool | What it does | Why |
 > |---|---|---|
 > | `run_python` | Runs code in a **Docker container**: no internet, 10-second limit, memory limit, thrown away after the run | Bad or harmful code only affects the box |
-> | `search_library` | Searches a **fixed library** of ~30 saved pages on the topic | Every run sees the same pages (**reproducible**), it's free, and I can **plant the false fact** in one page. Live web search is used only for the demo |
-> | `read_notes` / `write_notes` | The agent's **private** memory file | Models forget between calls; the chat is already the shared space |
-> | `post_message` | Says something in the group chat | Reading isn't a tool: the last 20 messages are shown at the start of each turn (fewer tools = fewer mistakes) |
-> | `add_claim(text, source)` / `check_claim(claim, verdict, reason)` | Adds a claim marked *unchecked*; **only a different agent** can mark it correct / wrong / unsure. Only *correct* claims go in the briefing | Every check is saved as **data**, so "checked by" tags and catch rates come out automatically, and the code enforces "no checking yourself" |
-> | `claim_tokens(amount)` *(B only, Week 7)* | Claims tokens from the shared pool each round | The real-commons game |
-
-⚠ **Jarvis check (3 Nov), please revise:**
-- **Planted fact:** a famous fact gets caught from memory. Use a **niche topic**, plant **3–5 facts per run**, and **rotate** which section gets them. Decide whether the library also contains the true value. (Fix 2)
-- **B pool:** don't count input tokens (reading the chat would drain the pool, and tokenizers differ by model). Use a fixed **work-unit price per action**. (Fix 3)
-- **Notes, chat, sandbox:** a **fresh folder per run**, so nothing carries over between runs. (Fix 7)
+> | `search_library` | Searches a **fixed, read-only library** of ~30 saved pages on a topic from **after the models' training cutoff** (e.g. a 2026 event) | Every run sees the same pages (**reproducible**), it's free, and the models can only know the topic **from the library, not from memory**. Live web search is for the demo only |
+> | `read_notes` / `write_notes` | The agent's **private** memory file, **capped at 500 words** | Models forget between calls. The cap keeps every prompt a similar size, so no agent silently runs out of context |
+> | `post_message` | Says something in the group chat. **Free in B** | Reading isn't a tool: the last 20 messages are shown each turn. Free, so "chat on" never costs pool units |
+> | `add_claim(text, source)` / `check_claim(claim, verdict, reason)` | Adds a claim marked *unchecked*; **only a different agent** can mark it correct / wrong / unsure. Only *correct* claims go in the briefing | Every check is saved as **data**, so catch rates come out automatically, and the code enforces "no checking yourself" |
+> | `claim_units(amount)` *(B only, Week 7)* | Claims **work units** from the shared pool each round | The real-commons game (see below) |
+>
+> **Planted false facts (experiment A):** a pool of **9 false facts**. Each one is **contradicted by at least one other library page**, so catching it takes checking, not memory. **3 per run**, each on a page central to its section (so it's likely to be used). Which facts go in which sections follows a **fixed rotation schedule**, so every fact and section is used equally across conditions. I measure three things:
+> 1. **exposure:** did the fact become a claim at all?
+> 2. **catch rate:** of the exposed facts, how many were marked wrong?
+> 3. **false alarms:** true claims marked wrong.
+>
+> **B's pool in work units, not tokens:** one price list for every model (search = 2, read a page = 1, write 100 words = 1, add or check a claim = 1; chat and notes are free). Tokens differ between models and reading the chat would drain them, so tokens would make the comparison unfair. Real tokens and cost are still logged alongside.
+>
+> **Fresh start every run:** each run gets its own folder `runs/<run_id>/` (chat, notes, sandbox, logs). Nothing carries over between runs, and parallel runs can't mix.
 
 ## 4. How does the group chat work?
 **Decide:** where messages are stored, and what each agent sees.
@@ -81,8 +87,8 @@ How to use this file: each section is one decision. Read the options and Jarvis'
 > - **Length cap:** ~300 words per message, so no agent floods the chat, and it saves tokens (which matters in B).
 > - **On/off switch:** the experiments compare **chat vs no chat**.
 > - **No human messages during a run:** I only have the kill switch, so runs stay comparable.
-
-⚠ **Jarvis check (3 Nov), add two lines:** (1) the **game state** (lake/pool size, past choices) is shown in a separate status block every turn, so "chat off" switches off talking only, not information (fix 4). (2) Over-long messages are **rejected with an error** the agent can read, never cut silently (fix 5).
+> - **Status block (added 3 Nov):** every turn, each agent also sees a **status block** written by my code: round number, lake or pool size, everyone's past choices, the agent's own score. It's shown in **both** chat on and chat off, so "chat off" removes talking only, not information.
+> - **Too long = rejected, never cut (added 3 Nov):** a message over 300 words comes back as an error the agent can read ("Too long: 412 words, max 300. Shorten and resend."), and the rejection is logged. Silently cutting it would make an agent look like a poor communicator because of my code.
 
 ## 5. Who speaks when? (the turn scheduler)
 **Decide:** the order agents take turns in, and how much each can do per turn.
@@ -140,7 +146,24 @@ How to use this file: each section is one decision. Read the options and Jarvis'
 ## 11. The experiment (first draft only; fixed in Week 7)
 **Decide:** the research question for the GovSim-style game.
 **Example:** *"Do mixed-model groups sustain a shared resource as well as same-model groups? Does open chat help?"* Another option, from AI Village: village vs a solo agent.
-**Checklist from the 3 Nov audit (PROJECT-MASTER §4.13, fixes 8–14):** shuffle run order across conditions · freeze code with a git tag · pin the OpenRouter provider · run a pre-flight test of 20 tool calls per model · keep the number of conditions small and the runs per condition high · give a solo agent the same total budget as the village · call the fish game a "sanity check against GovSim" and copy its exact settings (including whether agents know the number of rounds) · judge quality with a model outside the village · hide condition labels when sorting failures.
+**Jarvis's proposed experiment plan after the bias audit (3 Nov).** You decide; write your version below.
+
+| Experiment | Group types | Runs | Main measures |
+|---|---|---|---|
+| **A: truth** (must-have) | AAA, BBB, CCC, ABC | 10 each = 40 | Exposure, catch rate, false alarms |
+| **Fish: sanity check against GovSim** (must-have) | AAA, BBB, CCC, ABC, using GovSim's exact settings | 10 each = 40 | Survived yes/no **plus** rounds survived, catch ÷ safe catch, total harvest, fairness |
+| **B: real commons** (upgrade, cut first) | ABC, work-unit pool | 10 (compared with ABC fish) | The same game measures |
+| Chat off (optional, cut second) | ABC fish, chat off | 10 | The same game measures |
+| ~~Village vs solo~~ | Dropped for now (future idea; would need an equal budget) | | |
+
+How the runs are done:
+1. **Pilot first (Week 7):** 3 runs per group type, **not counted in the results**. Check for a **floor or ceiling**, e.g. every group collapses in round 1, or every lie is caught. If one appears, only the adjustments written down in advance are allowed (e.g. the reasoning hint GovSim itself tested; check paper 12).
+2. **Pre-register,** then **freeze** the code (`git tag experiment-v1`).
+3. **Rotate:** which agent writes which section, and the direction of the checking loop (A→B→C or A→C→B), follow a fixed schedule.
+4. **Run:** shuffle the run order across conditions; pin the providers; run 3–4 runs in parallel (each in its own folder). Q5's infrastructure-failure rule applies.
+5. **Report:** rates with 95% ranges, called **exploratory**. Judge quality (if at all) with a model **outside** the village. **Hide condition labels** when sorting failures.
+
+Rough size: ~90–100 runs. A runs take ~15 min, fish runs ~5 min, 3–4 at a time → **~8–10 h of running** over 2–3 GPU sessions.
 
 **Your answer:**
 > _write here_
