@@ -66,8 +66,14 @@ How to use this file: each section is one decision. Read the options and Jarvis'
 **Options:** every agent sees every message · each agent sees only the last N messages · a summary of older messages.
 **Jarvis suggests:** store every message in an append-only file (one JSON line per message). Each agent sees the **last 20 messages + its own notes file**. Showing everything eventually overflows the model's context, and models lose track of the middle of long inputs (paper 1, *Lost in the Middle*).
 
-**Your answer:**
-> _write here_
+**Your answer (decided 3 Nov):**
+> - **Storage:** `chat.jsonl`, one JSON line per message, **append-only** (added to the end, never edited). The dashboard and the analysis both read the same file.
+> - **Each message:** `time, round, sender, text`. Without who and when, nothing can be analysed (e.g. "C promised 10 in round 3, then took 25").
+> - **What each agent sees:** the **last 20 messages + its own notes**. The full chat would overflow the context, get slower and costlier, and models lose the middle of long inputs (*Lost in the Middle*).
+> - **Public only:** no private messages, so the dashboard and analysis see everything. Secret deals are a future idea.
+> - **Length cap:** ~300 words per message, so no agent floods the chat, and it saves tokens (which matters in B).
+> - **On/off switch:** the experiments compare **chat vs no chat**.
+> - **No human messages during a run:** I only have the kill switch, so runs stay comparable.
 
 ## 5. Who speaks when? (the turn scheduler)
 **Decide:** the order agents take turns in, and how much each can do per turn.
