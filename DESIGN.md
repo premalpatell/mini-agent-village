@@ -80,8 +80,15 @@ How to use this file: each section is one decision. Read the options and Jarvis'
 **Options:** round-robin (A → B → C → A …) · random order each round · all at once.
 **Jarvis suggests:** **round-robin**. In one turn an agent may make up to **5 tool calls** (your `range(5)` from Week 1), then must post a message or pass. Simple, fair and easy to debug.
 
-**Your answer:**
-> _write here_
+**Your answer (decided 3 Nov):**
+> - **Order:** rotating round-robin (round 1 A-B-C, round 2 B-C-A, round 3 C-A-B…), so no agent always goes first (**first-mover bias**).
+> - **Games (fish + B):** choices are made **at the same time**: each agent chooses secretly, all choices are revealed together, then they chat. Like GovSim, so the results can be compared.
+> - **Per turn:** up to **5 tool calls**, then the agent must post a message or **pass** (passing is allowed and logged).
+> - **Length:** briefing up to **20 rounds**; fish game: the **same number of rounds as GovSim** (set when I read the paper).
+> - **When an API fails:** two kinds of failure are kept apart. **Agent failures** (bad tool call, broken JSON, poor decisions) are behaviour and count in the results. **Infrastructure failures** (API down, 429, timeout) are plumbing and must not distort the results:
+>   1. Retry up to **3 times** (wait 5 s, 15 s, 45 s).
+>   2. **Briefing:** if it still fails, skip that turn and log it. **Games:** the round **pauses** (nobody moves); if still down after **5 minutes**, the run stops and is marked *infrastructure failure*.
+>   3. **Rule fixed in advance:** infrastructure-failure runs are kept in the logs, left out of the results, re-run, and **reported** (e.g. "2 of 27 runs re-run due to API outages"). Deciding this before seeing results prevents **cherry-picking**.
 
 ## 6. When does a run stop?
 **Decide:** every way a run can end.
