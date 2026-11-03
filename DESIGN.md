@@ -33,8 +33,16 @@ How to use this file: each section is one decision. Read the options and Jarvis'
 **Options:** 2–5 agents · hosted models from OpenRouter (different companies) · your own self-hosted model (vLLM in Week 3; Ollama as the free fallback).
 **Jarvis suggests:** **3 agents**: 2 hosted from **different model families** + 1 self-hosted. Give all three the **same system prompt**, so the model is the only thing that differs. That keeps the comparison fair later.
 
-**Your answer:**
-> _write here_
+**Your answer (decided 3 Nov):**
+> **3 agents.** Two is only a pair; three is the smallest real group (someone can be outvoted, a free-rider can hide), and it fits the A→B→C→A checking loop while keeping costs low.
+>
+> **Models:** 2 hosted models from **different companies** + 1 **self-hosted** model on a rented GPU (vLLM, Week 3; Ollama qwen2.5:3b as the free fallback). Self-hosting is the independent setup Prof. Jin asks for.
+>
+> **Second condition:** a **same-model village** (3 copies of one model) to compare against the mixed village in experiment A. I'll run it on my self-hosted model, so the copies cost only GPU time, not per-token fees.
+>
+> **Exact hosted models:** chosen in Week 5 after checking current OpenRouter prices (free models get rate-limited). Budget ~$5 of credit.
+>
+> **Names:** neutral (Agent A, B, C), with the **same instructions** for all, so the model is the only difference between agents (the control).
 
 ## 3. What tools does each agent get?
 **Decide:** the tool list, and what each one is allowed to do.
