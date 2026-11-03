@@ -44,6 +44,8 @@ How to use this file: each section is one decision. Read the options and Jarvis'
 >
 > **Names:** neutral (Agent A, B, C), with the **same instructions** for all, so the model is the only difference between agents (the control).
 
+⚠ **Jarvis check (3 Nov), please revise:** the same-model group (3 × your 7–8B) vs the mixed group (2 bigger hosted models) changes **two things at once**: diversity *and* strength. Choose hosted models in the **same size class** (~7–9B, different companies), and plan to analyse results per checker→writer pair. Also: the same temperature and max output length for every agent. (PROJECT-MASTER §4.13, fixes 1 + 15.)
+
 ## 3. What tools does each agent get?
 **Decide:** the tool list, and what each one is allowed to do.
 **Options:** Python runner (inside Docker) · web search · notes file (memory) · send a message to the group chat · read the chat.
@@ -61,6 +63,11 @@ How to use this file: each section is one decision. Read the options and Jarvis'
 > | `add_claim(text, source)` / `check_claim(claim, verdict, reason)` | Adds a claim marked *unchecked*; **only a different agent** can mark it correct / wrong / unsure. Only *correct* claims go in the briefing | Every check is saved as **data**, so "checked by" tags and catch rates come out automatically, and the code enforces "no checking yourself" |
 > | `claim_tokens(amount)` *(B only, Week 7)* | Claims tokens from the shared pool each round | The real-commons game |
 
+⚠ **Jarvis check (3 Nov), please revise:**
+- **Planted fact:** a famous fact gets caught from memory. Use a **niche topic**, plant **3–5 facts per run**, and **rotate** which section gets them. Decide whether the library also contains the true value. (Fix 2)
+- **B pool:** don't count input tokens (reading the chat would drain the pool, and tokenizers differ by model). Use a fixed **work-unit price per action**. (Fix 3)
+- **Notes, chat, sandbox:** a **fresh folder per run**, so nothing carries over between runs. (Fix 7)
+
 ## 4. How does the group chat work?
 **Decide:** where messages are stored, and what each agent sees.
 **Options:** every agent sees every message · each agent sees only the last N messages · a summary of older messages.
@@ -74,6 +81,8 @@ How to use this file: each section is one decision. Read the options and Jarvis'
 > - **Length cap:** ~300 words per message, so no agent floods the chat, and it saves tokens (which matters in B).
 > - **On/off switch:** the experiments compare **chat vs no chat**.
 > - **No human messages during a run:** I only have the kill switch, so runs stay comparable.
+
+⚠ **Jarvis check (3 Nov), add two lines:** (1) the **game state** (lake/pool size, past choices) is shown in a separate status block every turn, so "chat off" switches off talking only, not information (fix 4). (2) Over-long messages are **rejected with an error** the agent can read, never cut silently (fix 5).
 
 ## 5. Who speaks when? (the turn scheduler)
 **Decide:** the order agents take turns in, and how much each can do per turn.
@@ -109,6 +118,7 @@ How to use this file: each section is one decision. Read the options and Jarvis'
 ## 8. What gets logged?
 **Decide:** the fields in each log line.
 **Jarvis suggests:** one JSON line per step: `time, run_id, round, agent, model, prompt_tokens, output_tokens, cost, tool_name, tool_args, tool_result, message`. If it isn't in the log, it can't be in your results.
+**Also log (3 Nov audit):** the **provider** that served each call, `temperature`, the **raw model output** (so plumbing errors can be told apart from agent errors), a flag when a prompt hit the context limit, and, in `summary.json`, the **git commit** and condition.
 
 **Your answer:**
 > _write here_
@@ -130,6 +140,7 @@ How to use this file: each section is one decision. Read the options and Jarvis'
 ## 11. The experiment (first draft only; fixed in Week 7)
 **Decide:** the research question for the GovSim-style game.
 **Example:** *"Do mixed-model groups sustain a shared resource as well as same-model groups? Does open chat help?"* Another option, from AI Village: village vs a solo agent.
+**Checklist from the 3 Nov audit (PROJECT-MASTER §4.13, fixes 8–14):** shuffle run order across conditions · freeze code with a git tag · pin the OpenRouter provider · run a pre-flight test of 20 tool calls per model · keep the number of conditions small and the runs per condition high · give a solo agent the same total budget as the village · call the fish game a "sanity check against GovSim" and copy its exact settings (including whether agents know the number of rounds) · judge quality with a model outside the village · hide condition labels when sorting failures.
 
 **Your answer:**
 > _write here_
