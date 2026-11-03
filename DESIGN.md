@@ -19,8 +19,14 @@ How to use this file: each section is one decision. Read the options and Jarvis'
 - **D. Sanctions:** avoid. Her lab already published **SanctSim**.
 - **Jarvis suggests A + B, with the classic fish game as a GovSim baseline:** "replicate, then extend". Check the literature before calling B new. If time runs short, A + the classic fish game is still strong.
 
-**Your answer:**
-> _write here_
+**Your answer (decided 3 Nov: A + B):**
+> **Goal:** In a normal run, the agents split a topic into sections. Each agent researches and writes its own section, and a different agent checks every claim in it before it goes into the joint briefing (A's section is checked by B, B's by C, C's by A). The final output is a one-page briefing where every claim has a source and a "checked by" tag, plus a log of every check.
+>
+> **Why:** A connects to Prof. Jin's work on LLM democracy defence (stopping misinformation spreading) and on how agents behave together. It responds to the AI Village failure where o3 invented a 93-person contact list and the other agents believed it and used it. B (the real commons: one shared token pool) connects to her GovSim paper on cooperation over a shared resource, because it asks GovSim's question with a real resource (the agents' own compute) instead of pretend fish.
+>
+> **Done when:** a run counts as a success if the briefing is finished (every section written), every claim was checked by a different agent, and the run stayed under budget without me touching it. Whether a planted false fact gets caught is a result I measure, not a success test.
+>
+> **If time runs short:** I cut B first and keep A plus the classic fish game, because A proves the village works and the fish game connects to GovSim. B is the extension: worth having, but not essential.
 
 ## 2. Which agents, and which models?
 **Decide:** how many agents, and which model each one runs.
