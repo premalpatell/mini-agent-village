@@ -95,7 +95,7 @@ How to use this file: each section is one decision. Read the options and Jarvis'
 > - **What each agent sees:** the **last 20 messages + its own notes**. The full chat would overflow the context, get slower and costlier, and models lose the middle of long inputs (*Lost in the Middle*).
 > - **Public only:** no private messages, so the dashboard and analysis see everything. Secret deals are a future idea.
 > - **Length cap:** ~300 words per message, so no agent floods the chat, and it saves tokens (which matters in B).
-> - **On/off switch:** the experiments compare **chat vs no chat**.
+> - **On/off switch:** kept as a setting. **Changed 5 Nov:** the chat-off condition was replaced by the mediator (§11), so chat-off is now a future idea.
 > - **No human messages during a run:** I only have the kill switch, so runs stay comparable.
 > - **Status block (added 3 Nov):** every turn, each agent also sees a **status block** written by my code: round number, lake or pool size, everyone's past choices, the agent's own score. It's shown in **both** chat on and chat off, so "chat off" removes talking only, not information. **Added 5 Nov:** in the briefing, the status block also shows each agent's **to-do list** (e.g. "your section: 3 of 5 claims checked; 2 of Agent B's claims are waiting for your check; submit by round 15"), the same in every condition, so a run doesn't stall just because an agent lost track of the steps.
 > - **Too long = rejected, never cut (added 3 Nov):** a message over 300 words comes back as an error the agent can read ("Too long: 412 words, max 300. Shorten and resend."), and the rejection is logged. Silently cutting it would make an agent look like a poor communicator because of my code.
@@ -186,8 +186,23 @@ How to use this file: each section is one decision. Read the options and Jarvis'
 **Decide:** the "done when" for the village (Week 5).
 **Jarvis suggests:** *"A 30-minute run finishes on the goal from §1 without me touching it, stays under budget, and the full trace is in the log."*
 
-**Your answer:**
-> _write here_
+**Your answer (decided 5 Nov):**
+> Not one good run: a **checklist**, including tests where I break things on purpose (**fault injection**), because the safety parts only run when something goes wrong.
+>
+> | # | Test | Passes when |
+> |---|---|---|
+> | 1 | Fish run on the real models | Completes end to end without me touching it |
+> | 2 | Briefing run (A) | Ends `completed` within budget |
+> | 3 | Run files | Every run writes `config.json`, `events.jsonl`, `chat.jsonl`, `prompts.jsonl`, `summary.json` (§8) |
+> | 4 | Caps | A tiny cap ($0.01) stops the run with end reason `budget` |
+> | 5 | Kill switch | A STOP file mid-run gives `killed`, with all logs saved |
+> | 6 | Outages | A wrong API key gives retry → pause → `infra_failure` (§5) |
+> | 7 | Parallel runs | 3 at once; each folder holds only its own run |
+> | 8 | Pre-flight | Each model gets ≥ 18 of 20 tool calls right (§2) |
+> | 9 | Reproducibility | The same config + seed puts the false facts in the same places |
+> | 10 | Validation (§9) | Bad calls (own claim, fake page ID, catch of 999) are rejected and logged as `error` |
+>
+> **When:** the full checklist runs **before the pilot**, and again **after any code change** before the counted runs.
 
 ## 11. The experiment (first draft only; fixed in Week 7)
 **Decide:** the research question for the GovSim-style game.
@@ -199,29 +214,43 @@ How to use this file: each section is one decision. Read the options and Jarvis'
 | **A: truth** (must-have) | AAA, BBB, CCC, ABC | 9 each = 36 | **Primary:** catch rate of exposed facts, ABC vs the average of AAA/BBB/CCC. Secondary: exposure, false alarms, rubber-stamp rate |
 | **Fish: sanity check against GovSim** (must-have) | AAA, BBB, CCC, ABC, using GovSim's exact settings | 9 each = 36 | **Primary:** rounds survived. Secondary: survived yes/no, catch ÷ safe catch, total harvest, fairness |
 | **B: real commons** (upgrade, cut first) | ABC, work-unit pool | 9 (compared with ABC fish) | Primary: rounds survived |
-| Chat off (optional, cut second) | ABC fish, chat off | 9 | Primary: rounds survived |
+| ~~Chat off~~ → **Mediator** (optional, cut second; changed 5 Nov) | ABC fish + a neutral mediator agent that can't fish | 9 (compared with ABC fish) | Primary: rounds survived |
 | ~~Village vs solo~~ | Dropped for now (future idea; would need an equal budget) | | |
 
 How the runs are done:
 1. **Pilot first (Week 7):** 3 runs per group type, **not counted in the results**. Check for a **floor or ceiling**, e.g. every group collapses in round 1, or every lie is caught. If one appears, only the adjustments written down in advance are allowed (e.g. the reasoning hint GovSim itself tested; check paper 12).
 2. **Pre-register,** then **freeze** the code (`git tag experiment-v1`).
-3. **Rotate:** which agent writes which section, and the direction of the checking loop (A→B→C or A→C→B), follow a fixed schedule.
+3. **Rotate:** which agent writes which section follows a fixed schedule. The checking direction is **fixed** (A→B→C→A; see my answer below).
 4. **Run:** shuffle the run order across conditions; pin the providers; run 3–4 runs in parallel (each in its own folder). Q5's infrastructure-failure rule applies.
 5. **Report:** rates with 95% ranges, called **exploratory**. Judge quality (if at all) with a model **outside** the village. **Hide condition labels** when sorting failures.
 
 Rough size: ~90 runs. A runs take ~15 min, fish runs ~5 min, 3–4 at a time → **~8–10 h of running** over 2–3 GPU sessions.
 
 **Added 5 Nov (review):**
-- **Why 9 runs, not 10:** 9 false facts form **3 sets of 3**, and there are **3 ways** to assign sections. 3 × 3 = 9 runs uses every fact set with every section assignment exactly once (**balanced**). With 10 runs, one set would be used more than the others. The checking direction alternates across runs.
+- **Why 9 runs, not 10:** 9 false facts form **3 sets of 3**, and there are **3 ways** to assign sections. 3 × 3 = 9 runs uses every fact set with every section assignment exactly once (**balanced**). With 10 runs, one set would be used more than the others. The checking direction stays fixed (see my answer below).
 - **One primary measure per experiment, fixed in advance.** With many measures × many groups, something will look different **by luck** (the **multiple-comparisons** problem). The primary measure is the headline; everything else is reported as secondary.
 - **Runs, not facts, are the unit.** The 3 facts in one run share the same agents, so they aren't independent. Ranges are worked out by **resampling whole runs** (a **bootstrap over runs**), not by treating 27 facts as 27 separate trials.
 - **Build order: fish game first.** It needs no library, no claims and no sandbox, only the core village (scheduler, status block, simultaneous choices, chat, logs, caps). So it's the fastest way to a working village with a real result. Then A, then B. (A is still the must-have *experiment*; this is only the order of *building*.)
 - **Where the experiment runs:** the village program runs **on the rented server**, next to vLLM, not on the laptop. A laptop that sleeps, restarts for Windows Update, or loses power or internet would kill runs. A run that dies isn't resumed: it's marked `infra_failure` and re-run (Q5 rule).
-- **Gate dates:** **13 Dec**: the fish game runs end to end on the real models, or B and chat-off are cut at once. **20 Dec** (end of the pilot): A works, or A shrinks to ABC + the strongest same-model group, and the report says so.
+- **Gate dates:** **13 Dec**: the fish game runs end to end on the real models, or B and the mediator condition are cut at once. **20 Dec** (end of the pilot): A works, or A shrinks to ABC + the strongest same-model group, and the report says so.
 - **If a hosted model or provider disappears mid-experiment:** stop, swap, and re-run **every** condition containing that model. Running all experiment runs inside a **3-day window** makes this unlikely.
 
-**Your answer:**
-> _write here_
+**Your answer (decided 5 Nov):**
+> **I accept the plan above,** with two changes decided 5 Nov:
+> 1. **Mediator replaces chat-off.** GovSim already showed that talking matters, so chat-off would only replicate it. Prof. Jin's 2026 CoopEval paper found that a **neutral mediator** is one of the best ways to keep agents cooperating, so testing it in a live village **extends** her newest work. Setup: ABC fish + a 4th agent, the **mediator**, which sees the same status block, posts **one message per round before the choices** (e.g. a suggested fair catch), and **cannot fish**. It runs on one fixed model for all 9 runs (chosen at the pilot). It's compared with the 9 plain ABC fish runs. Same slot: optional, **cut second** (after B).
+> 2. **Checking direction is fixed** (A→B→C→A) for all runs. Two directions can't be split evenly over 9 runs, and the fact-set balance matters more. It only affects ABC (in AAA/BBB/CCC every checker is the same model), and it's **reported as a limitation**.
+>
+> **Research questions:**
+> - **A:** Do mixed-model groups catch planted false facts more often than same-model groups?
+> - **Fish:** Do our groups sustain the lake about as well as GovSim's results suggest, and does group type matter?
+> - **B:** Do agents sustain a real resource (their own work budget) better or worse than pretend fish?
+> - **Mediator:** Does a neutral mediator help a mixed group keep the lake alive?
+>
+> **My predictions (written before any run):**
+> - **A:** _my guess + one-line reason_
+> - **Fish:** _my guess + one-line reason_
+> - **B:** _my guess + one-line reason_
+> - **Mediator:** _my guess + one-line reason_
 
 ## 12. Architecture diagram
 Draw boxes and arrows: agents, the models behind them, tools, the group chat, the scheduler, logs and the dashboard. Use [Excalidraw](https://excalidraw.com) (free, in the browser), export a PNG to `docs/architecture.png`, and link it here. The rough version in `PROJECT-MASTER.md` §1 is a starting point.
