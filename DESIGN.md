@@ -210,7 +210,7 @@ Rough size: ~90 runs. A runs take ~15 min, fish runs ~5 min, 3–4 at a time →
 - **Runs, not facts, are the unit.** The 3 facts in one run share the same agents, so they aren't independent. Ranges are worked out by **resampling whole runs** (a **bootstrap over runs**), not by treating 27 facts as 27 separate trials.
 - **Build order: fish game first.** It needs no library, no claims and no sandbox, only the core village (scheduler, status block, simultaneous choices, chat, logs, caps). So it's the fastest way to a working village with a real result. Then A, then B. (A is still the must-have *experiment*; this is only the order of *building*.)
 - **Where the experiment runs:** the village program runs **on the rented server**, next to vLLM, not on the laptop. A laptop that sleeps, restarts for Windows Update, or loses power or internet would kill runs. A run that dies isn't resumed: it's marked `infra_failure` and re-run (Q5 rule).
-- **Gate dates:** **13 Dec**: the fish game runs end to end on the real models, or B and chat-off are cut at once. **27 Dec**: A runs end to end, or A shrinks to ABC + the strongest same-model group, and the report says so.
+- **Gate dates:** **13 Dec**: the fish game runs end to end on the real models, or B and chat-off are cut at once. **20 Dec** (end of the pilot): A works, or A shrinks to ABC + the strongest same-model group, and the report says so.
 - **If a hosted model or provider disappears mid-experiment:** stop, swap, and re-run **every** condition containing that model. Running all experiment runs inside a **3-day window** makes this unlikely.
 
 **Your answer:**
