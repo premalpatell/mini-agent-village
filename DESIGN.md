@@ -110,8 +110,21 @@ How to use this file: each section is one decision. Read the options and Jarvis'
 **Options:** max rounds · the goal is declared done · the budget runs out · you press the kill switch · an error.
 **Jarvis suggests:** all of them. Max **20 rounds**. "Done" only counts if another agent confirms it, because AI Village agents declared success that wasn't real. Whatever the reason, **always save the logs** before exiting.
 
-**Your answer:**
-> _write here_
+**Your answer (decided 5 Nov):**
+> - **"Done" is checked by my code, not claimed by an agent:** the briefing is complete when all 3 sections are submitted (new small tool: `submit_section`) and every claim in them has been checked. The code checks **completeness**, not quality; quality is measured in the analysis.
+> - **Every way a run can end is recorded as its end reason:**
+>
+> | End reason | When |
+> |---|---|
+> | `completed` | The code confirms the briefing is done |
+> | `collapsed` | The fish lake drops below 5, or B's token pool hits 0 |
+> | `max_rounds` | 20 rounds (briefing) or GovSim's round count (game) |
+> | `stalled` | 3 rounds in a row with nothing new (everyone passes, no new claims) |
+> | `budget` | The money cap is hit (§7) |
+> | `killed` | I pressed the kill switch (§7) |
+> | `infra_failure` | The API was down for over 5 minutes (§5) |
+>
+> - **However it ends, the run always saves its logs and writes `summary.json`** (end reason, rounds, total cost, time taken), even after a crash, so dozens of runs can be counted instantly.
 
 ## 7. Budget caps and the kill switch
 **Decide:** hard limits, and how you stop a run instantly.
