@@ -46,6 +46,8 @@ How to use this file: each section is one decision. Read the options and Jarvis'
 >
 > **Same settings for all:** the same system prompt, temperature and max output length, logged with every call.
 >
+> **Added 5 Nov (review):** **temperature 0.7** for every agent (at 0, the three copies in AAA would act almost identically every run). Agents are **never told which models are in their group**, in any condition, because knowing "we're mixed" would be a second difference. The prompt **never mentions the experiment** ("we're testing whether you catch lies" would change behaviour). The exact prompt text is fixed before the experiment and published.
+>
 > **Names:** neutral (Agent A, B, C), so the model is the only difference between agents (the control).
 
 ## 3. What tools does each agent get?
@@ -58,8 +60,9 @@ How to use this file: each section is one decision. Read the options and Jarvis'
 >
 > | Tool | What it does | Why |
 > |---|---|---|
-> | `run_python` | Runs code in a **Docker container**: no internet, 10-second limit, memory limit, thrown away after the run | Bad or harmful code only affects the box |
-> | `search_library` | Searches a **fixed, read-only library** of ~30 saved pages on a topic from **after the models' training cutoff** (e.g. a 2026 event) | Every run sees the same pages (**reproducible**), it's free, and the models can only know the topic **from the library, not from memory**. Live web search is for the demo only |
+> | `run_python` | Runs code in a **Docker container**: no internet, 10-second limit, memory limit, thrown away after the run | Bad or harmful code only affects the box. **Revised 5 Nov:** used in the Week 4 single-agent milestone and the demo, **not in the experiment tool set**. The experiments don't need it, every extra tool makes small models less reliable, and it takes Docker off the experiment's critical path |
+> | `search_library` | Searches a **fixed, read-only library** of ~30 pages. **Revised 5 Nov:** the topic is **fictional but realistic** (e.g. a made-up town's 2026 flood-defence project), drafted by a model **outside** the village and checked by hand | No model can know it from memory (stronger than "after the cutoff"), every run sees the same pages (**reproducible**), it's free, it can be **published** without copyright problems, and planted false facts are **never about real people or events**. Live web search is for the demo only |
+> | `read_page(page_id)` *(added 5 Nov)* | Returns the full text of one library page | Search returns short snippets; checking a claim properly needs the whole page. It was already in B's price list (read a page = 1) but missing from this table |
 > | `read_notes` / `write_notes` | The agent's **private** memory file, **capped at 500 words** | Models forget between calls. The cap keeps every prompt a similar size, so no agent silently runs out of context |
 > | `post_message` | Says something in the group chat. **Free in B** | Reading isn't a tool: the last 20 messages are shown each turn. Free, so "chat on" never costs pool units |
 > | `add_claim(text, source)` / `check_claim(claim, verdict, reason)` | Adds a claim marked *unchecked*; **only a different agent** can mark it correct / wrong / unsure. Only *correct* claims go in the briefing | Every check is saved as **data**, so catch rates come out automatically, and the code enforces "no checking yourself" |
@@ -73,6 +76,13 @@ How to use this file: each section is one decision. Read the options and Jarvis'
 > **B's pool in work units, not tokens:** one price list for every model (search = 2, read a page = 1, write 100 words = 1, add or check a claim = 1; chat and notes are free). Tokens differ between models and reading the chat would drain them, so tokens would make the comparison unfair. Real tokens and cost are still logged alongside.
 >
 > **Fresh start every run:** each run gets its own folder `runs/<run_id>/` (chat, notes, sandbox, logs). Nothing carries over between runs, and parallel runs can't mix.
+>
+> **Added 5 Nov (review):**
+> - **Ground truth is fixed in advance:** every true fact appears on **at least 2 pages**, one of them an "official" page (e.g. the council report). Each planted false fact appears on **exactly 1 page**. An answer key (`library/answer_key.json`) lists every true and false fact; agents never see it.
+> - **How verdicts on a planted fact are scored:** `wrong` = **caught**, `unsure` = **flagged** (reported separately), `correct` = **missed**. Claims marked `unsure` don't enter the briefing.
+> - **Rubber-stamping is measured:** a checker who marks claims "correct" without looking. `check_claim` also takes `evidence_page`; the code logs whether the checker actually searched or read that page earlier in the run. **% of checks with no evidence looked at** is a measure.
+> - **No hiding from the test:** each section needs **at least 5 claims marked correct** to be submittable, so an agent can't avoid mistakes by making no claims.
+> - **The library file carries a warning:** "contains deliberately false statements for research", so nobody mistakes it for real information.
 
 ## 4. How does the group chat work?
 **Decide:** where messages are stored, and what each agent sees.
@@ -87,7 +97,7 @@ How to use this file: each section is one decision. Read the options and Jarvis'
 > - **Length cap:** ~300 words per message, so no agent floods the chat, and it saves tokens (which matters in B).
 > - **On/off switch:** the experiments compare **chat vs no chat**.
 > - **No human messages during a run:** I only have the kill switch, so runs stay comparable.
-> - **Status block (added 3 Nov):** every turn, each agent also sees a **status block** written by my code: round number, lake or pool size, everyone's past choices, the agent's own score. It's shown in **both** chat on and chat off, so "chat off" removes talking only, not information.
+> - **Status block (added 3 Nov):** every turn, each agent also sees a **status block** written by my code: round number, lake or pool size, everyone's past choices, the agent's own score. It's shown in **both** chat on and chat off, so "chat off" removes talking only, not information. **Added 5 Nov:** in the briefing, the status block also shows each agent's **to-do list** (e.g. "your section: 3 of 5 claims checked; 2 of Agent B's claims are waiting for your check; submit by round 15"), the same in every condition, so a run doesn't stall just because an agent lost track of the steps.
 > - **Too long = rejected, never cut (added 3 Nov):** a message over 300 words comes back as an error the agent can read ("Too long: 412 words, max 300. Shorten and resend."), and the rejection is logged. Silently cutting it would make an agent look like a poor communicator because of my code.
 
 ## 5. Who speaks when? (the turn scheduler)
@@ -97,7 +107,7 @@ How to use this file: each section is one decision. Read the options and Jarvis'
 
 **Your answer (decided 3 Nov):**
 > - **Order:** rotating round-robin (round 1 A-B-C, round 2 B-C-A, round 3 C-A-B…), so no agent always goes first (**first-mover bias**).
-> - **Games (fish + B):** choices are made **at the same time**: each agent chooses secretly, all choices are revealed together, then they chat. Like GovSim, so the results can be compared.
+> - **Games (fish + B):** choices are made **at the same time**: each agent chooses secretly, all choices are revealed together, then they chat. Like GovSim, so the results can be compared. **Added 5 Nov:** the choice is made through a tool, `choose_catch(amount)` (or `claim_units(amount)` in B), and the code checks it's a whole number between 0 and what's available. An invalid choice comes back as a readable error, with up to **3 attempts**. After that, the catch is 0 and the turn is flagged as an **agent failure** (it's behaviour, so it counts, and its rate is reported). The pilot checks that this is rare.
 > - **Per turn:** up to **5 tool calls**, then the agent must post a message or **pass** (passing is allowed and logged).
 > - **Length:** briefing up to **20 rounds**; fish game: the **same number of rounds as GovSim** (set when I read the paper).
 > - **When an API fails:** two kinds of failure are kept apart. **Agent failures** (bad tool call, broken JSON, poor decisions) are behaviour and count in the results. **Infrastructure failures** (API down, 429, timeout) are plumbing and must not distort the results:
@@ -111,7 +121,7 @@ How to use this file: each section is one decision. Read the options and Jarvis'
 **Jarvis suggests:** all of them. Max **20 rounds**. "Done" only counts if another agent confirms it, because AI Village agents declared success that wasn't real. Whatever the reason, **always save the logs** before exiting.
 
 **Your answer (decided 5 Nov):**
-> - **"Done" is checked by my code, not claimed by an agent:** the briefing is complete when all 3 sections are submitted (new small tool: `submit_section`) and every claim in them has been checked. The code checks **completeness**, not quality; quality is measured in the analysis.
+> - **"Done" is checked by my code, not claimed by an agent:** the briefing is complete when all 3 sections are submitted (new small tool: `submit_section`), every claim in them has been checked, and each has **at least 5 claims marked correct** (added 5 Nov). **Sections must be submitted by round 15**, which leaves 5 rounds for the last checks, so a claim added in round 19 can't make a run fail on timing alone. The code checks **completeness**, not quality; quality is measured in the analysis.
 > - **Every way a run can end is recorded as its end reason:**
 >
 > | End reason | When |
@@ -134,7 +144,7 @@ How to use this file: each section is one decision. Read the options and Jarvis'
 **Your answer (decided 5 Nov):**
 > - **How the cap works:** every model reply reports its tokens; cost = tokens × that model's price, added to a running total after each call. Hitting a cap ends the run with reason `budget`.
 > - **Per run:** **$0.50**.
-> - **Per agent:** ~**50,000 tokens** per run, so one looping agent can't eat the whole budget. (In experiment B, the shared work-unit pool is part of the *game*; this token cap is a separate guard rail above it and never changes between conditions.)
+> - **Per agent:** a token cap per run, so one looping agent can't eat the whole budget. **Revised 5 Nov:** the cap is **set from the pilot at ~3× typical use**. My rough maths: each call sends ~5,000 tokens (instructions + status + 20 messages + notes + tool results), ~3 calls a turn, 20 rounds = **~300,000 tokens per agent per A run**. The first guess of 50,000 would have stopped *every* run as `budget`, a floor effect created by my own cap. The **$0.50/run** and **daily** caps are also re-set from the pilot (small models cost roughly 1–5 cents a run, so the daily cap is likely ~$5 in experiment week, and ~$10 of OpenRouter credit in total). Free OpenRouter models have small daily request limits, so the experiments use cheap **paid** models. (In experiment B, the shared work-unit pool is part of the *game*; this token cap is a separate guard rail above it and never changes between conditions.)
 > - **Per day:** **$2** across all runs, tracked in `costs.jsonl`. The village refuses to start a new run once today's limit is spent.
 > - **Outside lock:** the OpenRouter key's own credit limit ($1 now; ~$5 for the village weeks). If my code's caps fail, OpenRouter still refuses to spend more.
 > - **Rented GPU** (billed per hour, so the risk is forgetting to switch it off): a max-hours rule per session, a shutdown checklist in `SETUP.md`, and a phone alarm.
@@ -179,10 +189,10 @@ How to use this file: each section is one decision. Read the options and Jarvis'
 
 | Experiment | Group types | Runs | Main measures |
 |---|---|---|---|
-| **A: truth** (must-have) | AAA, BBB, CCC, ABC | 10 each = 40 | Exposure, catch rate, false alarms |
-| **Fish: sanity check against GovSim** (must-have) | AAA, BBB, CCC, ABC, using GovSim's exact settings | 10 each = 40 | Survived yes/no **plus** rounds survived, catch ÷ safe catch, total harvest, fairness |
-| **B: real commons** (upgrade, cut first) | ABC, work-unit pool | 10 (compared with ABC fish) | The same game measures |
-| Chat off (optional, cut second) | ABC fish, chat off | 10 | The same game measures |
+| **A: truth** (must-have) | AAA, BBB, CCC, ABC | 9 each = 36 | **Primary:** catch rate of exposed facts, ABC vs the average of AAA/BBB/CCC. Secondary: exposure, false alarms, rubber-stamp rate |
+| **Fish: sanity check against GovSim** (must-have) | AAA, BBB, CCC, ABC, using GovSim's exact settings | 9 each = 36 | **Primary:** rounds survived. Secondary: survived yes/no, catch ÷ safe catch, total harvest, fairness |
+| **B: real commons** (upgrade, cut first) | ABC, work-unit pool | 9 (compared with ABC fish) | Primary: rounds survived |
+| Chat off (optional, cut second) | ABC fish, chat off | 9 | Primary: rounds survived |
 | ~~Village vs solo~~ | Dropped for now (future idea; would need an equal budget) | | |
 
 How the runs are done:
@@ -192,7 +202,16 @@ How the runs are done:
 4. **Run:** shuffle the run order across conditions; pin the providers; run 3–4 runs in parallel (each in its own folder). Q5's infrastructure-failure rule applies.
 5. **Report:** rates with 95% ranges, called **exploratory**. Judge quality (if at all) with a model **outside** the village. **Hide condition labels** when sorting failures.
 
-Rough size: ~90–100 runs. A runs take ~15 min, fish runs ~5 min, 3–4 at a time → **~8–10 h of running** over 2–3 GPU sessions.
+Rough size: ~90 runs. A runs take ~15 min, fish runs ~5 min, 3–4 at a time → **~8–10 h of running** over 2–3 GPU sessions.
+
+**Added 5 Nov (review):**
+- **Why 9 runs, not 10:** 9 false facts form **3 sets of 3**, and there are **3 ways** to assign sections. 3 × 3 = 9 runs uses every fact set with every section assignment exactly once (**balanced**). With 10 runs, one set would be used more than the others. The checking direction alternates across runs.
+- **One primary measure per experiment, fixed in advance.** With many measures × many groups, something will look different **by luck** (the **multiple-comparisons** problem). The primary measure is the headline; everything else is reported as secondary.
+- **Runs, not facts, are the unit.** The 3 facts in one run share the same agents, so they aren't independent. Ranges are worked out by **resampling whole runs** (a **bootstrap over runs**), not by treating 27 facts as 27 separate trials.
+- **Build order: fish game first.** It needs no library, no claims and no sandbox, only the core village (scheduler, status block, simultaneous choices, chat, logs, caps). So it's the fastest way to a working village with a real result. Then A, then B. (A is still the must-have *experiment*; this is only the order of *building*.)
+- **Where the experiment runs:** the village program runs **on the rented server**, next to vLLM, not on the laptop. A laptop that sleeps, restarts for Windows Update, or loses power or internet would kill runs. A run that dies isn't resumed: it's marked `infra_failure` and re-run (Q5 rule).
+- **Gate dates:** **13 Dec**: the fish game runs end to end on the real models, or B and chat-off are cut at once. **27 Dec**: A runs end to end, or A shrinks to ABC + the strongest same-model group, and the report says so.
+- **If a hosted model or provider disappears mid-experiment:** stop, swap, and re-run **every** condition containing that model. Running all experiment runs inside a **3-day window** makes this unlikely.
 
 **Your answer:**
 > _write here_
