@@ -117,7 +117,7 @@ How to use this file: each section is one decision. Read the options and Jarvis'
 > | End reason | When |
 > |---|---|
 > | `completed` | The code confirms the briefing is done |
-> | `collapsed` | The fish lake drops below 5, or B's token pool hits 0 |
+> | `collapsed` | The fish lake drops below 5, or B's work-unit pool hits 0 |
 > | `max_rounds` | 20 rounds (briefing) or GovSim's round count (game) |
 > | `stalled` | 3 rounds in a row with nothing new (everyone passes, no new claims) |
 > | `budget` | The money cap is hit (§7) |
@@ -134,7 +134,7 @@ How to use this file: each section is one decision. Read the options and Jarvis'
 **Your answer (decided 5 Nov):**
 > - **How the cap works:** every model reply reports its tokens; cost = tokens × that model's price, added to a running total after each call. Hitting a cap ends the run with reason `budget`.
 > - **Per run:** **$0.50**.
-> - **Per agent:** ~**50,000 tokens** per run, so one looping agent can't eat the whole budget. (In experiment B, the shared token pool is part of the *game*; this cap is a separate guard rail above it and never changes between conditions.)
+> - **Per agent:** ~**50,000 tokens** per run, so one looping agent can't eat the whole budget. (In experiment B, the shared work-unit pool is part of the *game*; this token cap is a separate guard rail above it and never changes between conditions.)
 > - **Per day:** **$2** across all runs, tracked in `costs.jsonl`. The village refuses to start a new run once today's limit is spent.
 > - **Outside lock:** the OpenRouter key's own credit limit ($1 now; ~$5 for the village weeks). If my code's caps fail, OpenRouter still refuses to spend more.
 > - **Rented GPU** (billed per hour, so the risk is forgetting to switch it off): a max-hours rule per session, a shutdown checklist in `SETUP.md`, and a phone alarm.
@@ -147,8 +147,16 @@ How to use this file: each section is one decision. Read the options and Jarvis'
 **Jarvis suggests:** one JSON line per step: `time, run_id, round, agent, model, prompt_tokens, output_tokens, cost, tool_name, tool_args, tool_result, message`. If it isn't in the log, it can't be in your results.
 **Also log (3 Nov audit):** the **provider** that served each call, `temperature`, the **raw model output** (so plumbing errors can be told apart from agent errors), a flag when a prompt hit the context limit, and, in `summary.json`, the **git commit** and condition.
 
-**Your answer:**
-> _write here_
+**Your answer (decided 5 Nov):**
+> - **Format:** JSON lines, one event per line, so analysis code can read every event as data.
+> - **Fields:** `time, run_id, round, agent, model, provider, temperature, event, prompt_tokens, output_tokens, cost, work_units, tool_name, tool_args, tool_result, message, context_limit_hit`. `event` = `model_call | tool_call | message | claim | check | game_choice | error`. `work_units` is what the action cost in B's pool (real tokens and cost are logged alongside).
+> - **Full prompts and raw replies** go in a separate file (`prompts.jsonl`), for failure analysis (the exact text each agent saw and wrote) and to tell plumbing errors apart from agent errors.
+> - **`config.json` per run:** models + providers, group type (AAA/BBB/CCC/ABC), chat on/off, caps, topic, random seed, and the **git commit ID**, so every result can be traced to the exact code and settings (**reproducibility**). `summary.json` repeats the commit and condition.
+> - **Seed:** my code's own random choices use a recorded seed. A model's randomness via an API can't be fully fixed, and the report will say so.
+> - **One folder per run:** `runs/<YYYY-MM-DD_HHMM_condition>/` with `config.json`, `events.jsonl`, `chat.jsonl`, `prompts.jsonl`, `summary.json`.
+> - **Never logged:** API keys, request headers, `.env` values. The logs will be public.
+> - **Where:** committed to git while small; over ~50 MB, zipped onto a GitHub release. Raw logs are never deleted, failed runs included.
+> - **Times:** UTC (`2026-12-21T14:30:05Z`).
 
 ## 9. Safety rules
 **Decide:** what agents can never do.
