@@ -131,8 +131,16 @@ How to use this file: each section is one decision. Read the options and Jarvis'
 **Options:** a dollar cap per run · a token cap per agent · a time limit · a kill switch (Ctrl+C handled cleanly, or a `STOP` file the loop checks).
 **Jarvis suggests:** **$0.50 per run** and a token cap per agent, enforced **in your code** and also by the OpenRouter credit limit (two locks). A `STOP` file the loop checks each turn, plus a clean Ctrl+C.
 
-**Your answer:**
-> _write here_
+**Your answer (decided 5 Nov):**
+> - **How the cap works:** every model reply reports its tokens; cost = tokens × that model's price, added to a running total after each call. Hitting a cap ends the run with reason `budget`.
+> - **Per run:** **$0.50**.
+> - **Per agent:** ~**50,000 tokens** per run, so one looping agent can't eat the whole budget. (In experiment B, the shared token pool is part of the *game*; this cap is a separate guard rail above it and never changes between conditions.)
+> - **Per day:** **$2** across all runs, tracked in `costs.jsonl`. The village refuses to start a new run once today's limit is spent.
+> - **Outside lock:** the OpenRouter key's own credit limit ($1 now; ~$5 for the village weeks). If my code's caps fail, OpenRouter still refuses to spend more.
+> - **Rented GPU** (billed per hour, so the risk is forgetting to switch it off): a max-hours rule per session, a shutdown checklist in `SETUP.md`, and a phone alarm.
+> - **Kill switch:** Ctrl+C **and** a `STOP` file checked before every turn (works for background runs; later a dashboard Stop button creates it). Both end cleanly: logs + summary saved, end reason `killed`.
+> - **Develop for $0:** build and test on local Ollama; paid models only for real runs.
+> - **Where the self-hosted model runs:** practise vLLM on **Colab free** (no cost), then run the real village on a **rented GPU**. Colab disconnects, has no guaranteed GPU, and isn't built to be a server, so it's not reliable for dozens of 30-minute runs. A rented server is also the stronger "server I set up" evidence.
 
 ## 8. What gets logged?
 **Decide:** the fields in each log line.
