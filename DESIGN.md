@@ -172,8 +172,15 @@ How to use this file: each section is one decision. Read the options and Jarvis'
 **Decide:** what agents can never do.
 **Jarvis suggests:** the Python sandbox has **no network**, a 10-second time limit and a memory limit, and it's thrown away after each run. No email, no payments, no posting online, no access to your files. Agents can only use tools from the list, and your code decides whether each call runs.
 
-**Your answer:**
-> _write here_
+**Your answer (decided 5 Nov):**
+> - **Allowlist, not blocklist:** agents get **only** the tools in §3. There is no email, payment, posting or file-access tool, so those actions are impossible, not just forbidden.
+> - **Every tool call is validated by my code before it runs:** no checking your own claim · `choose_catch` / `claim_units` must be a whole number between 0 and what's available · messages ≤ 300 words · notes ≤ 500 words. A rejected call goes back as a readable error and is logged.
+> - **Notes tools take text only, never a file name,** and always use that agent's own file. This blocks **path traversal** (e.g. asking for `../../.env`).
+> - **Python sandbox** (Week 4 agent + demo): Docker, **no network**, 10-second limit, memory + CPU limits, **non-root** user, no access to my files, thrown away after each run.
+> - **Prompt injection** (text in a page that tries to give orders): tool results are wrapped and marked as **data**; the real defence is that agents have **no dangerous tools**. My library is written by me; live web search is used only in the demo.
+> - **vLLM server locked with an API key** (`--api-key`), so strangers who find its address can't use my paid GPU.
+> - **Before every push:** scan for secrets (search for `sk-`) and personal information. Keys are never logged (§8).
+> - **The library carries a warning label:** "contains deliberately false statements for research".
 
 ## 10. How will you know it works?
 **Decide:** the "done when" for the village (Week 5).
