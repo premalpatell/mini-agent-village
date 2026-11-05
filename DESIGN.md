@@ -246,11 +246,11 @@ Rough size: ~90 runs. A runs take ~15 min, fish runs ~5 min, 3–4 at a time →
 > - **B:** Do agents sustain a real resource (their own work budget) better or worse than pretend fish?
 > - **Mediator:** Does a neutral mediator help a mixed group keep the lake alive?
 >
-> **My predictions (written before any run):**
-> - **A:** _my guess + one-line reason_
-> - **Fish:** _my guess + one-line reason_
-> - **B:** _my guess + one-line reason_
-> - **Mediator:** _my guess + one-line reason_
+> **My predictions (chosen 5 Nov, before any run):**
+> - **A:** mixed groups catch **more** false facts. Models from different companies are trained on different data, so their blind spots differ; three copies of one model share the same ones.
+> - **Fish:** **most groups collapse.** In GovSim most models, especially smaller ones, over-fished; mine are ~7–9B.
+> - **B:** the real resource is sustained **worse** than the fish. A lake running out is a vivid, familiar story; a pool of work units is abstract, so agents notice the danger less and take more to finish their own task.
+> - **Mediator:** it **helps.** Prof. Jin's 2026 CoopEval paper found a neutral mediator was one of the best ways to keep agents cooperating.
 
 ## 12. Architecture diagram
 Draw boxes and arrows: agents, the models behind them, tools, the group chat, the scheduler, logs and the dashboard. Use [Excalidraw](https://excalidraw.com) (free, in the browser), export a PNG to `docs/architecture.png`, and link it here. The rough version in `PROJECT-MASTER.md` §1 is a starting point.
