@@ -13,3 +13,6 @@ __pycache__/
 # model checkpoints (large; never commit)
 *.pt
 out-*/
+
+# private study notes (kept local, never published)
+PROJECT-MASTER.md

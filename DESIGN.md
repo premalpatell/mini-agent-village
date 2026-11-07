@@ -1,6 +1,6 @@
 # mini-agent-village: design
 
-**Version 1, 7 Nov 2026.** The design is fixed for the build. The experiment plan (§11) is frozen before any counted run (`git tag experiment-v1`, Week 7). The full decision history is in git and `PROJECT-MASTER.md`.
+**Version 1, 7 Nov 2026.** The design is fixed for the build. The experiment plan (§11) is frozen before any counted run (`git tag experiment-v1`, Week 7). The full decision history is in git.
 
 **In one paragraph:** a small "AI village" that I am building and will run myself (the build starts 16 Nov 2026). Three LLM agents from three different companies share a group chat and text-only tools. One of the models will be served from a GPU server I set up myself (vLLM). The village does two jobs:
 - It writes a **fact-checked briefing**, in which the agents check each other's claims and some false facts are hidden in the sources.
