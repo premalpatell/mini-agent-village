@@ -298,4 +298,8 @@ Draw boxes and arrows: agents, the models behind them, tools, the group chat, th
 ```
 Not in the experiments, so drawn dashed or left out: the Python sandbox (`run_python`, Week 4 agent + demo only, §3) and live web search (demo only).
 
-> _final PNG link here: `docs/architecture.png`_
+**Final diagram (7 Nov):**
+
+![Village architecture](docs/architecture.png)
+
+Source: [`docs/architecture.svg`](docs/architecture.svg) (edit this and re-export the PNG if the design changes).
