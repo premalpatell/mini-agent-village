@@ -145,8 +145,8 @@ How to use this file: each section is one decision. Read the options and Jarvis'
 > - **How the cap works:** every model reply reports its tokens; cost = tokens × that model's price, added to a running total after each call. Hitting a cap ends the run with reason `budget`.
 > - **Per run:** **$0.50**.
 > - **Per agent:** a token cap per run, so one looping agent can't eat the whole budget. **Revised 5 Nov:** the cap is **set from the pilot at ~3× typical use**. My rough maths: each call sends ~5,000 tokens (instructions + status + 20 messages + notes + tool results), ~3 calls a turn, 20 rounds = **~300,000 tokens per agent per A run**. The first guess of 50,000 would have stopped *every* run as `budget`, a floor effect created by my own cap. The **$0.50/run** and **daily** caps are also re-set from the pilot (small models cost roughly 1–5 cents a run, so the daily cap is likely ~$5 in experiment week, and ~$10 of OpenRouter credit in total). Free OpenRouter models have small daily request limits, so the experiments use cheap **paid** models. (In experiment B, the shared work-unit pool is part of the *game*; this token cap is a separate guard rail above it and never changes between conditions.)
-> - **Per day:** **$2** across all runs, tracked in `costs.jsonl`. The village refuses to start a new run once today's limit is spent.
-> - **Outside lock:** the OpenRouter key's own credit limit ($1 now; ~$5 for the village weeks). If my code's caps fail, OpenRouter still refuses to spend more.
+> - **Per day:** **$2** while developing, **re-set from the pilot** (likely ~$5 in experiment week), across all runs, tracked in `costs.jsonl`. The village refuses to start a new run once today's limit is spent.
+> - **Outside lock:** the OpenRouter key's own credit limit ($1 now; **~$10 in total** for the village weeks). If my code's caps fail, OpenRouter still refuses to spend more.
 > - **Rented GPU** (billed per hour, so the risk is forgetting to switch it off): a max-hours rule per session, a shutdown checklist in `SETUP.md`, and a phone alarm.
 > - **Kill switch:** Ctrl+C **and** a `STOP` file checked before every turn (works for background runs; later a dashboard Stop button creates it). Both end cleanly: logs + summary saved, end reason `killed`.
 > - **Develop for $0:** build and test on local Ollama; paid models only for real runs.
@@ -255,4 +255,47 @@ Rough size: ~90 runs. A runs take ~15 min, fish runs ~5 min, 3–4 at a time →
 ## 12. Architecture diagram
 Draw boxes and arrows: agents, the models behind them, tools, the group chat, the scheduler, logs and the dashboard. Use [Excalidraw](https://excalidraw.com) (free, in the browser), export a PNG to `docs/architecture.png`, and link it here. The rough version in `PROJECT-MASTER.md` §1 is a starting point.
 
-> _diagram link here_
+**Draft (7 Nov, Jarvis) for me to redraw in Excalidraw.** Every box comes from an answer above (§ in brackets).
+
+```
+ ME (browser) ──watch──► DASHBOARD ◄──reads── run logs
+      └──Stop button──► STOP file (§7)
+
+┌──────────────── RENTED GPU SERVER (§11: everything runs here) ────────────────┐
+│                                                                               │
+│  config.json (§8) ──► RUNNER: the main loop (§5–7)                            │
+│  group type, seed,      • turn scheduler: rotating order, ≤5 calls per turn,  │
+│  caps, git commit         simultaneous game choices                           │
+│                         • builds each prompt: rules + status block +          │
+│                           last 20 messages + own notes (§4)                   │
+│                         • checks caps + STOP file before every turn (§7)      │
+│                         • checks end reasons: completed, collapsed, … (§6)    │
+│                                │ prompt ▼        ▲ reply                      │
+│       ┌──────────────┬─────────┴────┬─────────────────┐                       │
+│    Agent A        Agent B        Agent C         Mediator (mediator runs      │
+│       │              │              │             only; can't fish, §11)      │
+│  OpenRouter     OpenRouter     vLLM on this GPU                               │
+│  company 1      company 2      company 3, locked with an API key (§2, §9)     │
+│                                                                               │
+│  agents' tool calls ──► VALIDATOR (§9): allowlist + argument checks;          │
+│                         rejected → readable error + `error` event             │
+│                                │ allowed ▼                                    │
+│   ┌──────────────┬─────────────┼────────────────┬──────────────────┐          │
+│   LIBRARY        NOTES         GROUP CHAT       CLAIMS BOARD       GAME STATE │
+│   search_library private,      post_message     add_claim,         lake or    │
+│   read_page      ≤500 words    ≤300 words       check_claim,       work-unit  │
+│   ~30 pages (§3) per agent     chat.jsonl (§4)  submit_section     pool:      │
+│                                                 (§3, §6)           choose_catch│
+│                                                                    claim_units │
+│                                                                               │
+│  every event ──► runs/<date_condition>/ : config.json, events.jsonl,          │
+│                  chat.jsonl, prompts.jsonl, summary.json (§8)                 │
+└───────────────────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+     ANALYSIS (on my laptop): uses library/answer_key.json, which agents never
+     see → catch rates, rounds survived, bootstrap ranges → report (§11)
+```
+Not in the experiments, so drawn dashed or left out: the Python sandbox (`run_python`, Week 4 agent + demo only, §3) and live web search (demo only).
+
+> _final PNG link here: `docs/architecture.png`_
