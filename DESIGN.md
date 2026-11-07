@@ -2,7 +2,7 @@
 
 **Version 1, 7 Nov 2026.** The design is fixed for the build. The experiment plan (§11) is frozen before any counted run (`git tag experiment-v1`, Week 7). The full decision history is in git and `PROJECT-MASTER.md`.
 
-**In one paragraph:** a small "AI village" that I built and run myself. Three LLM agents from three different companies share a group chat and text-only tools. One of the models is served on a GPU server I set up (vLLM). The village does two jobs:
+**In one paragraph:** a small "AI village" that I am building and will run myself (the build starts 16 Nov 2026). Three LLM agents from three different companies share a group chat and text-only tools. One of the models will be served from a GPU server I set up myself (vLLM). The village does two jobs:
 - It writes a **fact-checked briefing**, in which the agents check each other's claims and some false facts are hidden in the sources.
 - It plays **commons games** in the style of GovSim: a shared lake, and a shared pool of the agents' own work budget.
 
@@ -14,7 +14,7 @@ The question running through both is whether **mixed-model groups behave differe
 
 ## 1. Goal
 - **Briefing (experiment A, must-have).** The agents split a topic into 3 sections, one each. Every claim must be checked by a **different** agent in a fixed loop (A→B→C→A) before it enters the briefing. The output is a one-page briefing in which every claim has a source and a "checked by" tag, plus a log of every check.
-  - *Why:* this tests the AI Village failure where one agent invented a contact list and the others believed it and used it. It also connects to Prof. Jin's work on LLM democracy defence.
+  - *Why:* this tests a failure seen in [AI Village](https://theaidigest.org/village), where one agent invented a contact list and the others believed it and used it. It also connects to research on LLMs and misinformation.
 - **Commons games.** The **fish game** uses GovSim's settings and is a sanity check against GovSim. **B (the real commons)** asks GovSim's question with a real resource: the agents' own work budget.
 - **If time runs short:** cut B first, then the mediator condition. A and the fish game are the core.
 
@@ -192,11 +192,11 @@ That's about 90 runs, or about 8–10 hours of running at 3–4 runs at a time, 
 | A: Do mixed-model groups catch more planted false facts than same-model groups? | **Yes, more** | Different companies' models have different blind spots |
 | Fish: Do our groups sustain the lake about as well as GovSim suggests, and does group type matter? | **Most collapse** | GovSim found that most models, especially small ones, over-fish |
 | B: Do agents sustain a real resource better or worse than pretend fish? | **Worse** | Work units are abstract, so the danger is less visible than an emptying lake |
-| Mediator: Does a neutral mediator help a mixed group keep the lake alive? | **It helps** | Prof. Jin's 2026 CoopEval found mediation among the most effective mechanisms |
+| Mediator: Does a neutral mediator help a mixed group keep the lake alive? | **It helps** | CoopEval (Tewolde et al., 2026) found mediation among the most effective mechanisms |
 
 **Why each choice:**
 - **9 runs:** the 9 false facts form 3 sets of 3. Crossing them with 3 section assignments gives 9 runs, each combination used once (**balanced**).
-- **Mediator instead of chat-off:** GovSim already showed that talking matters, so chat-off would only replicate it. A mediator **extends** CoopEval inside a live village.
+- **Mediator instead of chat-off:** GovSim already showed that talking matters, so chat-off would only replicate it. A mediator **extends** CoopEval [2] inside a live village.
   - It's a 4th agent whose only tool is `post_message`. It posts once per round, before the choices.
   - It sees the same status block, can't fish, and runs on one fixed model.
 - **One primary measure per experiment,** fixed in advance, to avoid the **multiple-comparisons** problem. Everything else is secondary.
@@ -226,3 +226,9 @@ That's about 90 runs, or about 8–10 hours of running at 3–4 runs at a time, 
 
 ## 12. Architecture
 The diagram is at the top of this document, and each box maps to a section above. Its source is [`docs/architecture.svg`](docs/architecture.svg), which can be edited and re-exported to `docs/architecture.png`.
+
+## References
+1. Piatti et al. (2024). *Cooperate or Collapse: Emergence of Sustainable Cooperation in a Society of LLM Agents* (GovSim). NeurIPS 2024. [arXiv:2404.16698](https://arxiv.org/abs/2404.16698)
+2. Tewolde, Zhang, Guzman Piedrahita, Conitzer & Jin (2026). *CoopEval.* [arXiv:2604.15267](https://arxiv.org/abs/2604.15267)
+3. Liu et al. (2024). *Lost in the Middle: How Language Models Use Long Contexts.* TACL. [arXiv:2307.03172](https://arxiv.org/abs/2307.03172)
+4. AI Digest. *AI Village.* [theaidigest.org/village](https://theaidigest.org/village)

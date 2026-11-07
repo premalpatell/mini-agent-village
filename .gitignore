@@ -8,3 +8,8 @@ __pycache__/
 
 # editor
 .vscode/
+.ipynb_checkpoints/
+
+# model checkpoints (large; never commit)
+*.pt
+out-*/
