@@ -6,7 +6,7 @@ A small multi-agent LLM "village" that I'm building and running myself, so I can
 
 Inspired by AI Digest's [AI Village](https://theaidigest.org/village) and by GovSim [1].
 
-**Status (7 Nov 2026): design complete; the build starts 16 Nov.**
+**Status (9 Nov 2026): design complete; the build starts 16 Nov.**
 - Done:
   - a tool-calling agent loop (on a local model and on a hosted model);
   - nanoGPT trained from scratch;
